@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- Order sequence: SSKK-2026-0001 -->
+    <record id="seq_sskk_order" model="ir.sequence">
+        <field name="name">SSKK Order</field>
+        <field name="code">sskk.order</field>
+        <field name="prefix">SSKK-%(year)s-</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Menu (from the PDF wireframe) -->
+    <record id="sskk_item_01" model="sskk.menu.item">
+        <field name="code">ITEM_01</field>
+        <field name="name">Chintapandu Pulihora</field>
+        <field name="column">column_1</field>
+        <field name="price">110</field>
+        <field name="min_qty">2</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="sskk_item_02" model="sskk.menu.item">
+        <field name="code">ITEM_02</field>
+        <field name="name">Special Traditional Full Meals</field>
+        <field name="column">column_1</field>
+        <field name="price">220</field>
+        <field name="min_qty">1</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="sskk_item_03" model="sskk.menu.item">
+        <field name="code">ITEM_03</field>
+        <field name="name">Bobbatlu (Pack of 2 pcs)</field>
+        <field name="column">column_2</field>
+        <field name="price">80</field>
+        <field name="min_qty">2</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <!-- Settings (edit in Settings > Technical > System Parameters) -->
+    <record id="param_sskk_tagline" model="ir.config_parameter">
+        <field name="key">sskk.tagline</field>
+        <field name="value">Authentic Traditional Home-Style Delicacies Crafted with Devotion</field>
+    </record>
+    <record id="param_sskk_address" model="ir.config_parameter">
+        <field name="key">sskk.address</field>
+        <field name="value">#14-2-89, Temple Street, Gandhi Nagar, Nellore - 524001</field>
+    </record>
+    <record id="param_sskk_phone" model="ir.config_parameter">
+        <field name="key">sskk.phone</field>
+        <field name="value">+91 98765 43210</field>
+    </record>
+    <record id="param_sskk_gst" model="ir.config_parameter">
+        <field name="key">sskk.gst_rate</field>
+        <field name="value">5</field>
+    </record>
+    <record id="param_sskk_delivery" model="ir.config_parameter">
+        <field name="key">sskk.delivery_charge</field>
+        <field name="value">40</field>
+    </record>
+    <record id="param_sskk_upi" model="ir.config_parameter">
+        <field name="key">sskk.upi_id</field>
+        <field name="value">yourupiid@bank</field>
+    </record>
+    <record id="param_sskk_payee" model="ir.config_parameter">
+        <field name="key">sskk.payee_name</field>
+        <field name="value">Sri Sri Kameshwari Kitchen</field>
+    </record>
+    <record id="param_sskk_demo" model="ir.config_parameter">
+        <field name="key">sskk.demo_mode</field>
+        <field name="value">1</field>
+    </record>
+    <record id="param_sskk_demo_step" model="ir.config_parameter">
+        <field name="key">sskk.demo_step_seconds</field>
+        <field name="value">8</field>
+    </record>
+
+    <!-- Link in website top menu -->
+    <record id="website_menu_sskk" model="website.menu">
+        <field name="name">Order Online</field>
+        <field name="url">/sskk-kitchen</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence">60</field>
+    </record>
+</odoo>

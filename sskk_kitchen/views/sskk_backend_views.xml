@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu items -->
+    <record id="sskk_menu_item_view_list" model="ir.ui.view">
+        <field name="name">sskk.menu.item.list</field>
+        <field name="model">sskk.menu.item</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="column"/>
+                <field name="price"/>
+                <field name="min_qty"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="sskk_menu_item_action" model="ir.actions.act_window">
+        <field name="name">Menu Items</field>
+        <field name="res_model">sskk.menu.item</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Orders -->
+    <record id="sskk_order_view_list" model="ir.ui.view">
+        <field name="name">sskk.order.list</field>
+        <field name="model">sskk.order</field>
+        <field name="arch" type="xml">
+            <list decoration-success="order_status == 'delivered'"
+                  decoration-warning="payment_status == 'pending'">
+                <field name="name"/>
+                <field name="create_date"/>
+                <field name="customer_name"/>
+                <field name="customer_phone"/>
+                <field name="grand_total" sum="Total"/>
+                <field name="payment_status"/>
+                <field name="order_status"/>
+                <field name="rating"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="sskk_order_view_form" model="ir.ui.view">
+        <field name="name">sskk.order.form</field>
+        <field name="model">sskk.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_confirm_payment" string="Confirm Payment" type="object"
+                            class="btn-primary" invisible="payment_status == 'success'"/>
+                    <button name="action_preparing" string="Start Preparing" type="object"
+                            class="btn-primary" invisible="order_status != 'placed'"/>
+                    <button name="action_out_for_delivery" string="Out for Delivery" type="object"
+                            class="btn-primary" invisible="order_status != 'preparing'"/>
+                    <button name="action_delivered" string="Mark Delivered" type="object"
+                            class="btn-primary" invisible="order_status != 'out_for_delivery'"/>
+                    <field name="order_status" widget="statusbar"
+                           statusbar_visible="awaiting,placed,preparing,out_for_delivery,delivered"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group string="Customer">
+                            <field name="customer_name"/>
+                            <field name="customer_phone"/>
+                            <field name="customer_address"/>
+                        </group>
+                        <group string="Payment">
+                            <field name="payment_status"/>
+                            <field name="paid_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Items">
+                            <field name="line_ids">
+                                <list>
+                                    <field name="item_code"/>
+                                    <field name="name"/>
+                                    <field name="price"/>
+                                    <field name="order_qty"/>
+                                    <field name="total" sum="Subtotal"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="sub_total"/>
+                                <field name="tax_amount"/>
+                                <field name="delivery_charge"/>
+                                <field name="grand_total" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        <page string="Feedback">
+                            <group>
+                                <field name="rating"/>
+                                <field name="comments"/>
+                                <field name="feedback_date"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="sskk_order_action" model="ir.actions.act_window">
+        <field name="name">Orders</field>
+        <field name="res_model">sskk.order</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menus -->
+    <menuitem id="sskk_menu_root" name="SSK Kitchen" sequence="40"/>
+    <menuitem id="sskk_menu_orders" name="Orders" parent="sskk_menu_root"
+              action="sskk_order_action" sequence="10"/>
+    <menuitem id="sskk_menu_items" name="Menu Items" parent="sskk_menu_root"
+              action="sskk_menu_item_action" sequence="20"/>
+</odoo>
