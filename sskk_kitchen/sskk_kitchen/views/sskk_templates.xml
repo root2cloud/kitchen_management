@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sskk_page" name="SSKK Kitchen Ordering Page">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'sskk_kitchen'"/>
+            <t t-set="no_header" t-value="True"/>
+            <t t-set="no_footer" t-value="True"/>
+
+            <div id="wrap" class="sskk-wrap">
+
+                <!-- FR-01: sticky header -->
+                <header class="sskk-header">
+                    <div class="sskk-hrow">
+                        <button type="button" id="sskk-theme" class="sskk-pill sskk-theme" aria-label="Toggle dark mode">🌙</button>
+
+                        <!-- NEW: visible Login button -->
+                        <t t-if="request.env.user._is_public()">
+                            <button type="button" id="sskk-login-top" class="sskk-loginbtn">🔑 Login</button>
+                        </t>
+                        <t t-else="">
+                            <a href="/odoo" class="sskk-loginbtn">⚙ Dashboard</a>
+                        </t>
+                        <div class="sskk-brandline">
+                            <button type="button" id="sskk-logo-btn" class="sskk-logo" title="Staff login - click to sign in" aria-label="Staff login">
+                                <span class="sskk-emblem"><span class="sskk-emblem-txt">SSK</span><span class="sskk-lock">🔒</span></span>
+                            </button>
+                            <span class="sskk-brand">Sri Sri Kameshwari Kitchen</span>
+                        </div>
+                        <button type="button" id="sskk-pill" class="sskk-pill">🛒 <b id="sskk-pill-count">0</b> · <span id="sskk-pill-total">₹0</span></button>
+                    </div>
+                    <div class="sskk-tagline">"<t t-esc="settings['tagline']"/>"</div>
+                    <div class="sskk-contact">
+                        <span>📍 <t t-esc="settings['address']"/></span>
+                        <span class="sskk-sep">|</span>
+                        <span>📞 <t t-esc="settings['phone']"/></span>
+                    </div>
+                </header>
+
+                <section class="sskk-hero">
+                    <span class="sskk-blob b1"></span><span class="sskk-blob b2"></span><span class="sskk-blob b3"></span>
+                    <div class="sskk-hero-grid">
+                        <div class="sskk-hero-copy">
+                            <span class="sskk-eyebrow">✦ Traditional Home-Style Kitchen</span>
+                            <h1>Taste the <em>tradition</em><br/>on your table</h1>
+                            <p>Authentic delicacies crafted with devotion. Pick your dishes, scan, pay and track your order live.</p>
+                            <div class="sskk-cta"><button type="button" id="sskk-cta" class="sskk-btn">Order Now ↓</button></div>
+                            <div class="sskk-stats">
+                                <div><b><t t-esc="len(columns[0]) + len(columns[1])"/></b><span>Dishes</span></div>
+                                <div><b>₹<t t-esc="'%g' % settings['delivery']"/></b><span>Delivery</span></div>
+                                <div><b><t t-esc="'%g' % settings['gst']"/>%</b><span>GST</span></div>
+                            </div>
+                        </div>
+                        <div class="sskk-hero-art" aria-hidden="true">
+                            <div class="sskk-plate" data-depth="-26">🍛</div>
+                            <span class="sskk-orbit o1" data-depth="44">🍮</span><span class="sskk-orbit o2" data-depth="-36">🍱</span>
+                            <span class="sskk-orbit o3" data-depth="32">🌶️</span><span class="sskk-orbit o4" data-depth="-48">🥥</span>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="sskk-marquee" aria-hidden="true">
+                    <div class="sskk-marquee-track">
+                        <t t-foreach="[1, 2, 3]" t-as="rep">
+                            <t t-foreach="columns" t-as="mc"><t t-foreach="mc" t-as="mi">
+                                <span>✦ <t t-esc="mi.name"/></span>
+                            </t></t>
+                        </t>
+                    </div>
+                </div>
+
+                <nav class="sskk-progress" id="sskk-progress" aria-label="Order progress">
+                    <span class="is-on" data-p="1"><i>1</i>Menu</span>
+                    <span data-p="2"><i>2</i>Cart</span>
+                    <span data-p="3"><i>3</i>Details</span>
+                    <span data-p="4"><i>4</i>Review</span>
+                    <span data-p="5"><i>5</i>Pay</span>
+                    <span data-p="6"><i>6</i>Track</span>
+                </nav>
+
+                <main id="sskk-app" class="sskk-main"
+                      t-att-data-gst="settings['gst']"
+                      t-att-data-delivery="settings['delivery']">
+
+                    <!-- (1) FR-02 / FR-03: 2-column menu -->
+                    <div class="sskk-layout">
+                    <section class="sskk-card sskk-a-menu" id="sskk-menu">
+                        <h2><span class="sskk-num">1</span>Select Menu Items</h2>
+                        <p class="sskk-hint">* Use + / - buttons to adjust order qty. Clicking + starts at Minimum Order Quantity.</p>
+                        <div class="sskk-toolbar">
+                            <div class="sskk-search"><span>🔍</span><input type="text" id="sskk-search" placeholder="Search dishes…" autocomplete="off"/></div>
+                            <label class="sskk-toggle"><input type="checkbox" id="sskk-only-sel"/> Selected only</label>
+                        </div>
+                        <div id="sskk-nomatch" class="sskk-empty" hidden="hidden">No dishes match your search.</div>
+                        <div class="sskk-menu-grid">
+                            <t t-foreach="columns" t-as="col">
+                                <div class="sskk-col" t-if="col">
+                                    <t t-foreach="col" t-as="item">
+                                        <t t-set="nm" t-value="item.name.lower()"/>
+                                        <div class="sskk-item"
+                                             t-att-data-id="item.id"
+                                             t-att-data-name="item.name"
+                                             t-att-data-price="'%g' % item.price"
+                                             t-att-data-min="item.min_qty"
+                                             t-att-data-icon="item.icon or ('🍮' if 'bobbatlu' in nm else ('🍱' if 'meal' in nm else '🍛'))">
+                                            <div class="sskk-icon">
+                                                <img t-if="item.has_image" class="sskk-photo" loading="lazy"
+                                                     t-att-alt="item.name"
+                                                     t-att-src="'/sskk/item/%d/image?v=%s' % (item.id, item.write_date.strftime('%Y%m%d%H%M%S'))"/>
+                                                <t t-else="" t-esc="item.icon or ('🍮' if 'bobbatlu' in nm else ('🍱' if 'meal' in nm else '🍛'))"/>
+                                            </div>
+                                            <div class="sskk-info">
+                                                <h3 class="sskk-name"><t t-esc="item.name"/></h3>
+                                                <p class="sskk-desc" t-if="item.description"><t t-esc="item.description"/></p>
+                                                <div class="sskk-meta">
+                                                    <span class="sskk-price">₹<t t-esc="'%g' % item.price"/></span>
+                                                    <span class="sskk-min">Min Qty: <t t-esc="item.min_qty"/></span>
+                                                </div>
+                                            </div>
+                                            <div class="sskk-side">
+                                                <div class="sskk-qtyctl">
+                                                    <button type="button" class="sskk-minus" aria-label="Decrease quantity">−</button>
+                                                    <span class="sskk-qty">0</span>
+                                                    <button type="button" class="sskk-plus" aria-label="Increase quantity">+</button>
+                                                </div>
+                                                <div class="sskk-line-total">₹0</div>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+                    </section>
+
+                    <!-- (2) FR-04: live cart -->
+                    <section class="sskk-card sskk-a-cart" id="sskk-cart">
+                        <h2><span class="sskk-num">2</span>Selected Items &amp; Bill Breakdown</h2>
+                        <div class="sskk-table-wrap">
+                            <table class="sskk-table sskk-table-compact">
+                                <thead>
+                                    <tr><th>Selected Item</th><th>Qty</th><th>Item Total</th></tr>
+                                </thead>
+                                <tbody id="sskk-cart-body"></tbody>
+                            </table>
+                        </div>
+                        <div class="sskk-bill">
+                            <div><span>Subtotal:</span><b id="sskk-subtotal">₹0.00</b></div>
+                            <div><span id="sskk-tax-label">Tax (5% GST):</span><b id="sskk-tax">₹0.00</b></div>
+                            <div><span>Delivery:</span><b id="sskk-delivery">₹0.00</b></div>
+                            <div class="sskk-bill-total"><span>Total:</span><b id="sskk-total">₹0.00</b></div>
+                        </div>
+                        <div class="sskk-actions">
+                            <button type="button" id="sskk-proceed" class="sskk-btn" hidden="hidden">Proceed ➔</button>
+                        </div>
+                    </section>
+
+                    <div class="sskk-flow">
+                    <!-- (3) FR-05: customer form -->
+                    <section class="sskk-card" id="sskk-customer" hidden="hidden">
+                        <h2><span class="sskk-num">3</span>Customer Details</h2>
+                        <form id="sskk-form" autocomplete="on">
+                            <label for="sskk-name">Full Name</label>
+                            <input type="text" id="sskk-name" name="name" required="required" maxlength="80" placeholder="e.g. Ramesh Kumar"/>
+
+                            <label for="sskk-phone">Phone Number (10 digits)</label>
+                            <input type="tel" id="sskk-phone" name="phone" required="required"
+                                   inputmode="numeric" maxlength="10" pattern="[0-9]{10}"
+                                   title="Enter a valid 10-digit phone number" placeholder="9876543210"/>
+
+                            <label for="sskk-address">Delivery Address</label>
+                            <textarea id="sskk-address" name="address" required="required" rows="3"
+                                      placeholder="Flat 202, Balaji Nagar, Nellore"></textarea>
+
+                            <div class="sskk-actions">
+                                <button type="submit" id="sskk-next" class="sskk-btn">Next ➔</button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <!-- (4) FR-06: order summary -->
+                    <section class="sskk-card" id="sskk-summary" hidden="hidden">
+                        <h2><span class="sskk-num">4</span>Final Order Summary</h2>
+                        <div id="sskk-sum-customer" class="sskk-sum-customer"></div>
+                        <div class="sskk-table-wrap">
+                            <table class="sskk-table sskk-table-compact">
+                                <thead><tr><th>Selected Item</th><th>Qty</th><th>Item Total</th></tr></thead>
+                                <tbody id="sskk-sum-items"></tbody>
+                            </table>
+                        </div>
+                        <div class="sskk-bill" id="sskk-sum-bill"></div>
+                        <div id="sskk-error" class="sskk-error" hidden="hidden"></div>
+                        <div class="sskk-actions">
+                            <button type="button" id="sskk-place" class="sskk-btn">Place Order &amp; Pay ➔</button>
+                        </div>
+                    </section>
+
+                    <!-- (5 and 6) FR-07 / FR-08: payment QR + tracking -->
+                    <section class="sskk-card" id="sskk-payment" hidden="hidden">
+                        <h2><span class="sskk-num">5-6</span>Payment &amp; Order Tracking</h2>
+                        <div id="sskk-pay-box" class="sskk-pay-box">
+                            <p>Scan QR Code to Make Payment. Amount Due: <b id="sskk-due">₹0.00</b></p>
+                            <div class="sskk-qr"><img id="sskk-qr-img" alt="UPI payment QR code" width="240" height="240"/></div>
+                            <p class="sskk-small">Order ID: <b id="sskk-order-id"></b> &#183; <a id="sskk-upi-link" href="#">Open in UPI app</a></p>
+                            <button type="button" id="sskk-paid" class="sskk-btn sskk-btn-green">✅ I Have Completed the Payment</button>
+                        </div>
+                        <div id="sskk-pay-banner" class="sskk-banner" hidden="hidden"></div>
+                        <div id="sskk-track" class="sskk-track" hidden="hidden"><div id="sskk-track-fill" class="sskk-track-fill"></div><span id="sskk-rider" class="sskk-rider">🛵</span></div>
+                        <ol id="sskk-stepper" class="sskk-stepper" hidden="hidden">
+                            <li data-step="placed"><span class="sskk-sico">📝</span>Placed</li>
+                            <li data-step="preparing"><span class="sskk-sico">👩‍🍳</span>Preparing</li>
+                            <li data-step="out_for_delivery"><span class="sskk-sico">🛵</span>Out for Delivery</li>
+                            <li data-step="delivered"><span class="sskk-sico">🎁</span>Delivered</li>
+                        </ol>
+                    </section>
+
+                    <!-- (7) FR-09: delivered + feedback -->
+                    <section class="sskk-card" id="sskk-feedback" hidden="hidden">
+                        <h2><span class="sskk-num">7</span>Delivered &amp; Feedback</h2>
+                        <div class="sskk-banner">✅ Your Order has been Delivered and Completed! Thank you.</div>
+                        <div id="sskk-fb-form">
+                            <div class="sskk-rate">
+                                <b>Rate Food &amp; Service:</b>
+                                <span id="sskk-stars" class="sskk-stars">
+                                    <button type="button" data-v="1" aria-label="1 star">⭐</button>
+                                    <button type="button" data-v="2" aria-label="2 stars">⭐</button>
+                                    <button type="button" data-v="3" aria-label="3 stars">⭐</button>
+                                    <button type="button" data-v="4" aria-label="4 stars">⭐</button>
+                                    <button type="button" data-v="5" aria-label="5 stars">⭐</button>
+                                </span>
+                                <span id="sskk-star-label">(5/5) - Excellent</span>
+                            </div>
+                            <label for="sskk-comments">Comments:</label>
+                            <textarea id="sskk-comments" rows="3" maxlength="1000" placeholder="Authentic homely taste!"></textarea>
+                            <div id="sskk-fb-error" class="sskk-error" hidden="hidden"></div>
+                            <div class="sskk-actions">
+                                <button type="button" id="sskk-fb-submit" class="sskk-btn sskk-btn-green">Submit Feedback</button>
+                            </div>
+                        </div>
+                        <div id="sskk-fb-thanks" class="sskk-banner" hidden="hidden">🙏 Thank you for your feedback!</div>
+                    </section>
+                </div></div>
+                </main>
+
+                <!-- staff login modal (opens when the ( SSK ) logo is clicked) -->
+                <div id="sskk-login" class="sskk-modal" hidden="hidden" role="dialog" aria-modal="true" aria-labelledby="sskk-login-title">
+                    <div class="sskk-modal-backdrop" data-close="1"></div>
+                    <form id="sskk-login-form" class="sskk-modal-box" autocomplete="on">
+                        <button type="button" class="sskk-modal-x" data-close="1" aria-label="Close">✕</button>
+                        <div class="sskk-modal-logo">( SSK )</div>
+                        <h3 id="sskk-login-title">Staff Login</h3>
+                        <p class="sskk-small">Sign in to manage menu items and orders.</p>
+                        <p class="sskk-small" t-if="not request.env.user._is_public()">
+                            Already signed in as <b t-esc="request.env.user.name"/> · <a href="/odoo">Open backend</a>
+                        </p>
+                        <label for="sskk-login-user">Email / Username</label>
+                        <input type="text" id="sskk-login-user" name="login" required="required" autocomplete="username"/>
+                        <label for="sskk-login-pass">Password</label>
+                        <div class="sskk-passwrap">
+                            <input type="password" id="sskk-login-pass" name="password" required="required" autocomplete="current-password"/>
+                            <button type="button" id="sskk-showpass" aria-label="Show password">👁</button>
+                        </div>
+                        <div id="sskk-login-error" class="sskk-error" hidden="hidden"></div>
+                        <button type="submit" id="sskk-login-btn" class="sskk-btn">Login ➔</button>
+                        <a class="sskk-small sskk-fullogin" href="/web/login?redirect=/odoo">Use the full login page</a>
+                    </form>
+                </div>
+
+                <div id="sskk-scrollbar" class="sskk-scrollbar"></div>
+                <div id="sskk-toast" class="sskk-toast" hidden="hidden"></div>
+                <div id="sskk-fab" class="sskk-fab" hidden="hidden">
+                    <span>🛒 <b id="sskk-fab-count">0</b> items · <b id="sskk-fab-total">₹0</b></span>
+                    <button type="button" id="sskk-fab-go">View Bill ➔</button>
+                </div>
+
+                <footer class="sskk-footer">
+                    © Sri Sri Kameshwari Kitchen · <t t-esc="settings['phone']"/> · UI v4
+                </footer>
+            </div>
+        </t>
+    </template>
+</odoo>
